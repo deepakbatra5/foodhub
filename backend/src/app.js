@@ -84,7 +84,11 @@ app.use('/api', (req, res, next) => {
     .catch(next);
 });
 
-app.use('/api/auth', require('./routes/auth'));
+const authRoutes = require('./routes/auth');
+
+app.post('/api/register', authRoutes.register);
+app.post('/api/login', authRoutes.login);
+app.use('/api/auth', authRoutes.router);
 app.use('/api/restaurants', require('./routes/restaurants'));
 app.use('/api/search', require('./routes/search'));
 app.use('/api/offers', require('./routes/offers'));

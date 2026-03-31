@@ -3,6 +3,20 @@ import api from '../api';
 import { currentUser, saveAuth } from '../auth';
 import { Navigate, Link } from 'react-router-dom';
 
+function getErrorMessage(err, fallbackMessage) {
+  const candidate = err?.response?.data?.error ?? err?.response?.data?.message ?? err?.message;
+
+  if (typeof candidate === 'string' && candidate.trim()) {
+    return candidate;
+  }
+
+  if (candidate && typeof candidate === 'object') {
+    return candidate.message || JSON.stringify(candidate);
+  }
+
+  return fallbackMessage;
+}
+
 export default function Signup() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -37,10 +51,10 @@ export default function Signup() {
     
     setLoading(true);
     try {
-      const response = await api.post('/api/auth/register', { name, email, password });
+      const response = await api.post('/api/register', { name, email, password });
       saveAuth(response.data);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Registration failed. Please try again.');
+      setError(getErrorMessage(err, 'Registration failed. Please try again.'));
     } finally {
       setLoading(false);
     }

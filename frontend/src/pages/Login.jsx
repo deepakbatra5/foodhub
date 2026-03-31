@@ -3,6 +3,20 @@ import api from '../api';
 import { currentUser, saveAuth } from '../auth';
 import { Navigate, Link } from 'react-router-dom';
 
+function getErrorMessage(err, fallbackMessage) {
+  const candidate = err?.response?.data?.error ?? err?.response?.data?.message ?? err?.message;
+
+  if (typeof candidate === 'string' && candidate.trim()) {
+    return candidate;
+  }
+
+  if (candidate && typeof candidate === 'object') {
+    return candidate.message || JSON.stringify(candidate);
+  }
+
+  return fallbackMessage;
+}
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,10 +39,10 @@ export default function Login() {
     
     setLoading(true);
     try {
-      const response = await api.post('/api/auth/login', { email, password });
+      const response = await api.post('/api/login', { email, password });
       saveAuth(response.data);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Login failed. Please try again.');
+      setError(getErrorMessage(err, 'Login failed. Please try again.'));
     } finally {
       setLoading(false);
     }
