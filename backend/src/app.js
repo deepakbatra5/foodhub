@@ -91,6 +91,11 @@ app.post('/api/login', authRoutes.login);
 app.post('/api/admin-login', adminRoutes.login);
 app.use('/api/auth', authRoutes.router);
 app.use('/api/admin', adminRoutes.router);
+
+// Compatibility mounts for environments that strip the /api prefix before handing requests to Express.
+app.post('/admin-login', adminRoutes.login);
+app.use('/admin', adminRoutes.router);
+
 app.use('/api/restaurants', require('./routes/restaurants'));
 app.use('/api/search', require('./routes/search'));
 app.use('/api/offers', require('./routes/offers'));
