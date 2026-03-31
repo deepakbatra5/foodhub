@@ -1,3 +1,7 @@
+// Sequelize loads the Postgres driver dynamically. Requiring it here makes
+// sure serverless bundlers like Vercel include the driver in the function.
+require('pg');
+require('pg-hstore');
 const { Sequelize } = require('sequelize');
 
 const DEFAULT_DATABASE_URL = 'postgres://postgres:postgres@localhost:5432/zomato';
