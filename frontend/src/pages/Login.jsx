@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import api from '../api';
-import { saveAuth } from '../auth';
-import { useNavigate, Link } from 'react-router-dom';
+import { currentUser, saveAuth } from '../auth';
+import { Navigate, Link } from 'react-router-dom';
 
 export default function Login() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const user = currentUser();
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +27,6 @@ export default function Login() {
     try {
       const response = await api.post('/api/auth/login', { email, password });
       saveAuth(response.data);
-      window.location.assign('/');
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Login failed. Please try again.');
     } finally {

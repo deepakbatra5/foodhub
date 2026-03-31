@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import api from '../api';
-import { saveAuth } from '../auth';
-import { useNavigate, Link } from 'react-router-dom';
+import { currentUser, saveAuth } from '../auth';
+import { Navigate, Link } from 'react-router-dom';
 
 export default function Signup() {
-  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const user = currentUser();
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +39,6 @@ export default function Signup() {
     try {
       const response = await api.post('/api/auth/register', { name, email, password });
       saveAuth(response.data);
-      window.location.assign('/');
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Registration failed. Please try again.');
     } finally {
