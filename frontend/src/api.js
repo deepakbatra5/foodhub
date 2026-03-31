@@ -1,38 +1,33 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://foodhub.sbs';
-console.log('🔗 API Base URL:', API_BASE);
+const rawApiBase = (import.meta.env.VITE_API_BASE || '').trim();
+const API_BASE = rawApiBase.endsWith('/') ? rawApiBase.slice(0, -1) : rawApiBase;
 
-const a = axios.create({
-  baseURL: API_BASE,
+export function apiUrl(path) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return API_BASE ? `${API_BASE}${normalizedPath}` : normalizedPath;
+}
+
+const api = axios.create({
+  baseURL: API_BASE || undefined,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// Request interceptor
-a.interceptors.request.use(c => {
-  const t = localStorage.getItem('token');
-  if(t) c.headers.Authorization = 'Bearer ' + t;
-  console.log('📤 Request:', c.method.toUpperCase(), c.baseURL + c.url);
-  return c;
-}, err => {
-  console.error('❌ Request error:', err);
-  return Promise.reject(err);
-});
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
 
-// Response interceptor
-a.interceptors.response.use(
-  res => {
-    console.log('📥 Response:', res.status, res.config.url);
-    return res;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
   },
-  err => {
-    console.error('❌ Response error:', err.message, err.response?.status, err.response?.data);
-    return Promise.reject(err);
-  }
+  (error) => Promise.reject(error)
 );
 
-export default a;
+export default api;
 export { API_BASE };

@@ -1,0 +1,8 @@
+{
+  "name": "zomato-vercel-app",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm --prefix frontend ci && npm --prefix backend ci",
+    "build": "npm --prefix frontend run build -- --outDir ../public --emptyOutDir"
+  }
+}

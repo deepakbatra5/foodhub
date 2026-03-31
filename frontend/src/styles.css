@@ -7,6 +7,8 @@
 /* ─────────────────────────────────────────────────────────────────
    CSS VARIABLES & DESIGN TOKENS
    ───────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 :root {
   /* Primary Colors - Warm Food Palette */
   --primary: #ff5a5f;
@@ -115,9 +117,6 @@ body {
   background: var(--bg-secondary);
   min-height: 100vh;
 }
-
-/* Import Google Font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* ─────────────────────────────────────────────────────────────────
    HEADER & NAVIGATION

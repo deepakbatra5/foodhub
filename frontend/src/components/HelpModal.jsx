@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { API_BASE } from '../api';
+import { apiUrl } from '../api';
 import { currentUser } from '../auth';
 
 export default function HelpModal({ isOpen, onClose }) {
@@ -7,25 +7,24 @@ export default function HelpModal({ isOpen, onClose }) {
   const [category, setCategory] = useState(null);
   const [issue, setIssue] = useState(null);
   const [solution, setSolution] = useState(null);
-  const [topics, setTopics] = useState([]);
   const [issues, setIssues] = useState([]);
   const [escalating, setEscalating] = useState(false);
   const [description, setDescription] = useState('');
   const user = currentUser();
 
   const categories = {
-    order: { icon: '📦', label: 'Order Issues' },
-    payment: { icon: '💳', label: 'Payment Help' },
-    delivery: { icon: '🚗', label: 'Delivery Issues' },
-    account: { icon: '👤', label: 'Account & Login' }
+    order: { icon: 'Order', label: 'Order Issues' },
+    payment: { icon: 'Payment', label: 'Payment Help' },
+    delivery: { icon: 'Delivery', label: 'Delivery Issues' },
+    account: { icon: 'Account', label: 'Account & Login' }
   };
 
   const handleSelectCategory = async (cat) => {
     setCategory(cat);
     try {
-      const res = await fetch(`${API_BASE}/help/issues/${cat}`);
+      const res = await fetch(apiUrl(`/api/help/issues/${cat}`));
       const data = await res.json();
-      setIssues(data.issues||[]);
+      setIssues(data.issues || []);
     } catch (e) {
       console.error('Get issues failed', e);
       setIssues([]);
@@ -36,10 +35,11 @@ export default function HelpModal({ isOpen, onClose }) {
   const handleSelectIssue = async (iss) => {
     setIssue(iss);
     try {
-      const res = await fetch(`${API_BASE}/help/solution/${category}/${iss}`);
+      const encodedIssue = encodeURIComponent(iss);
+      const res = await fetch(apiUrl(`/api/help/solution/${category}/${encodedIssue}`));
       const data = await res.json();
       setSolution(data.solution);
-      setStep(data.escalate?3:2);
+      setStep(data.escalate ? 3 : 2);
     } catch (e) {
       console.error('Solution fetch failed', e);
     }
@@ -52,15 +52,14 @@ export default function HelpModal({ isOpen, onClose }) {
     }
     setEscalating(true);
     try {
-      const res = await fetch(`${API_BASE}/help/escalate`, {
+      await fetch(apiUrl('/api/help/escalate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({ category, issue, description })
       });
-      const data = await res.json();
       setStep(4);
     } catch (e) {
       console.error('Escalate failed', e);
@@ -80,17 +79,17 @@ export default function HelpModal({ isOpen, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal modal-md" onClick={e=>e.stopPropagation()}>
+      <div className="modal modal-md" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>❓ Help & Support</h2>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <h2>Help & Support</h2>
+          <button className="modal-close" onClick={onClose}>X</button>
         </div>
         <div className="modal-body">
           {step === 0 && (
             <>
               <p className="help-intro">What can we help you with?</p>
               <div className="help-categories">
-                {Object.entries(categories).map(([key, {icon, label}]) => (
+                {Object.entries(categories).map(([key, { icon, label }]) => (
                   <button key={key} className="help-category-btn" onClick={() => handleSelectCategory(key)}>
                     <span className="icon">{icon}</span>
                     <span className="label">{label}</span>
@@ -104,20 +103,20 @@ export default function HelpModal({ isOpen, onClose }) {
             <>
               <p className="help-intro">What's the issue?</p>
               <div className="help-issues">
-                {issues.map(iss => (
+                {issues.map((iss) => (
                   <button key={iss} className="help-issue-btn" onClick={() => handleSelectIssue(iss)}>
                     {iss}
                   </button>
                 ))}
               </div>
-              <button className="btn btn-link" onClick={resetFlow}>← Back</button>
+              <button className="btn btn-link" onClick={resetFlow}>Back</button>
             </>
           )}
 
           {step === 2 && solution && (
             <>
               <div className="solution-container">
-                <h4>✓ Solution</h4>
+                <h4>Solution</h4>
                 <p className="solution-text">{solution}</p>
                 <div className="solution-actions">
                   <button className="btn btn-secondary" onClick={resetFlow}>Ask another question</button>
@@ -130,7 +129,7 @@ export default function HelpModal({ isOpen, onClose }) {
           {step === 3 && (
             <>
               <div className="escalate-form">
-                <h4>📞 Escalate to Support</h4>
+                <h4>Escalate to Support</h4>
                 <p className="form-help">Our team will contact you within 2 hours</p>
                 {user ? (
                   <>
@@ -138,7 +137,7 @@ export default function HelpModal({ isOpen, onClose }) {
                       placeholder="Describe your issue in detail..."
                       className="form-textarea"
                       value={description}
-                      onChange={e => setDescription(e.target.value)}
+                      onChange={(e) => setDescription(e.target.value)}
                       rows={4}
                     />
                     <button className="btn btn-primary" onClick={handleEscalate} disabled={!description}>
@@ -146,16 +145,16 @@ export default function HelpModal({ isOpen, onClose }) {
                     </button>
                   </>
                 ) : (
-                  <p className="auth-prompt">🔐 Please sign in to escalate</p>
+                  <p className="auth-prompt">Please sign in to escalate</p>
                 )}
               </div>
-              <button className="btn btn-link" onClick={resetFlow}>← Back</button>
+              <button className="btn btn-link" onClick={resetFlow}>Back</button>
             </>
           )}
 
           {step === 4 && (
             <div className="success-state">
-              <div className="success-icon">✓</div>
+              <div className="success-icon">OK</div>
               <h4>Support Ticket Created!</h4>
               <p>Reference ID will be sent to your email. Our team will reach out shortly.</p>
               <button className="btn btn-primary" onClick={onClose}>Got it</button>
@@ -163,7 +162,7 @@ export default function HelpModal({ isOpen, onClose }) {
           )}
 
           <div className="help-footer">
-            <p className="micro-copy">📞 Can't wait? Call us 24/7</p>
+            <p className="micro-copy">Need urgent help? Contact support directly.</p>
           </div>
         </div>
       </div>

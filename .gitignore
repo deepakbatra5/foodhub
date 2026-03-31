@@ -1,9 +1,12 @@
 # Node
 node_modules/
 npm-debug.log*
+*.log
+*.err.log
 
 # Frontend build
 frontend/dist/
+public/
 
 # Env files
 *.env
