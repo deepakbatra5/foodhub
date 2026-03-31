@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import api from '../../api';
-import { currentUser, saveAuth } from '../../auth';
+import { saveAuth } from '../../auth';
 
 function getErrorMessage(error, fallbackMessage) {
   const candidate = error?.response?.data?.error ?? error?.message;
@@ -14,9 +14,8 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [redirect, setRedirect] = useState(false);
-  const user = currentUser();
 
-  if (redirect || user?.role === 'admin') {
+  if (redirect) {
     return <Navigate to="/admin" replace />;
   }
 
