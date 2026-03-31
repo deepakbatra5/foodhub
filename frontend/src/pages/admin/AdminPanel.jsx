@@ -42,6 +42,10 @@ function formatCurrency(value) {
   return `Rs ${Number(value || 0).toLocaleString()}`;
 }
 
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 async function adminRequest(method, path, data) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 
@@ -83,7 +87,7 @@ export default function AdminPanel() {
   const [successMessage, setSuccessMessage] = useState('');
 
   const selectedRestaurant = useMemo(
-    () => restaurants.find((restaurant) => String(restaurant.id) === String(selectedRestaurantId)) || null,
+    () => asArray(restaurants).find((restaurant) => String(restaurant.id) === String(selectedRestaurantId)) || null,
     [restaurants, selectedRestaurantId]
   );
 
@@ -113,16 +117,20 @@ export default function AdminPanel() {
         adminRequest('get', '/restaurants')
       ]);
 
-      setSummary(summaryResponse.data);
-      setUsers(usersResponse.data);
-      setOrders(ordersResponse.data);
-      setRestaurants(restaurantsResponse.data);
+      const usersData = asArray(usersResponse.data);
+      const ordersData = asArray(ordersResponse.data);
+      const restaurantsData = asArray(restaurantsResponse.data);
 
-      if (!selectedRestaurantId && restaurantsResponse.data.length > 0) {
-        setSelectedRestaurantId(String(restaurantsResponse.data[0].id));
+      setSummary(summaryResponse.data);
+      setUsers(usersData);
+      setOrders(ordersData);
+      setRestaurants(restaurantsData);
+
+      if (!selectedRestaurantId && restaurantsData.length > 0) {
+        setSelectedRestaurantId(String(restaurantsData[0].id));
         setMenuForm((current) => ({
           ...current,
-          restaurantId: String(restaurantsResponse.data[0].id)
+          restaurantId: String(restaurantsData[0].id)
         }));
       }
     } catch (requestError) {
@@ -151,13 +159,15 @@ export default function AdminPanel() {
       adminRequest('get', '/restaurants')
     ]);
 
-    setSummary(summaryResponse.data);
-    setRestaurants(restaurantsResponse.data);
+    const restaurantsData = asArray(restaurantsResponse.data);
 
-    const hasSelectedRestaurant = restaurantsResponse.data.some(
+    setSummary(summaryResponse.data);
+    setRestaurants(restaurantsData);
+
+    const hasSelectedRestaurant = restaurantsData.some(
       (restaurant) => String(restaurant.id) === String(nextRestaurantId)
     );
-    const fallbackRestaurantId = restaurantsResponse.data[0]?.id;
+    const fallbackRestaurantId = restaurantsData[0]?.id;
     const effectiveRestaurantId = hasSelectedRestaurant ? nextRestaurantId : fallbackRestaurantId || '';
 
     setSelectedRestaurantId(effectiveRestaurantId ? String(effectiveRestaurantId) : '');
