@@ -11,13 +11,44 @@ export default function Restaurant({ cart, setCart }) {
   const [activeCategory, setActiveCategory] = useState('All');
 
   useEffect(() => {
-    setLoading(true);
-    api.get(`/api/restaurants/${id}`)
-      .then(response => {
-        setRestaurant(response.data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    let cancelled = false;
+
+    async function loadRestaurant() {
+      setLoading(true);
+
+      try {
+        const response = await api.get(`/api/restaurants/${id}`);
+        if (!cancelled) {
+          setRestaurant(response.data);
+          setLoading(false);
+        }
+        return;
+      } catch (error) {
+        console.error('Primary restaurant fetch failed:', error.message);
+      }
+
+      try {
+        const fallbackResponse = await api.get('/api/restaurants');
+        const matchedRestaurant = fallbackResponse.data.find((item) => String(item.id) === String(id)) || null;
+
+        if (!cancelled) {
+          setRestaurant(matchedRestaurant);
+          setLoading(false);
+        }
+      } catch (fallbackError) {
+        console.error('Fallback restaurant fetch failed:', fallbackError.message);
+        if (!cancelled) {
+          setRestaurant(null);
+          setLoading(false);
+        }
+      }
+    }
+
+    loadRestaurant();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const addToCart = (item) => {

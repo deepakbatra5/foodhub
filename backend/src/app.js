@@ -4,6 +4,7 @@ const express = require('express');
 const { ensureDatabaseReady } = require('./bootstrap');
 
 const app = express();
+app.set('etag', false);
 
 function getAllowedOrigins() {
   const configuredOrigins = (process.env.ALLOWED_ORIGINS || '')
@@ -71,6 +72,11 @@ app.use(express.json());
 
 app.get('/healthz', handleHealthCheck);
 app.get('/api/healthz', handleHealthCheck);
+
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 
 app.use('/api', (req, res, next) => {
   ensureDatabaseReady()
