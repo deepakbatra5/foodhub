@@ -2,6 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/api/admin/:path*",
+      "destination": "/api/admin/[...all]"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api/[...all]"
+    },
+    {
       "source": "/",
       "destination": "/index.html"
     },
