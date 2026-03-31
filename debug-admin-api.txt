@@ -1,0 +1,10 @@
+LOGIN_STATUS=200
+LOGIN_BODY={"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzc0OTc2NjcyLCJleHAiOjE3NzU1ODE0NzJ9.botKRGKTz0oAkrattuZEI63frRXr-YvfSuYFajaiWNg","user":{"id":2,"name":"FoodHub Admin","email":"admin@foodhub.local","role":"admin"}}
+ADMIN_SUMMARY_ERROR=The remote server returned an error: (404) Not Found.
+ADMIN_SUMMARY_BODY=
+ADMIN_USERS_ERROR=The remote server returned an error: (404) Not Found.
+ADMIN_USERS_BODY=
+ADMIN_ORDERS_ERROR=The remote server returned an error: (404) Not Found.
+ADMIN_ORDERS_BODY=
+ADMIN_RESTAURANTS_ERROR=The remote server returned an error: (404) Not Found.
+ADMIN_RESTAURANTS_BODY=
