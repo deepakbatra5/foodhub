@@ -5,6 +5,8 @@ const { ensureDatabaseReady } = require('./bootstrap');
 
 const app = express();
 app.set('etag', false);
+const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
 
 function getAllowedOrigins() {
   const configuredOrigins = (process.env.ALLOWED_ORIGINS || '')
@@ -84,11 +86,11 @@ app.use('/api', (req, res, next) => {
     .catch(next);
 });
 
-const authRoutes = require('./routes/auth');
-
 app.post('/api/register', authRoutes.register);
 app.post('/api/login', authRoutes.login);
+app.post('/api/admin-login', adminRoutes.login);
 app.use('/api/auth', authRoutes.router);
+app.use('/api/admin', adminRoutes.router);
 app.use('/api/restaurants', require('./routes/restaurants'));
 app.use('/api/search', require('./routes/search'));
 app.use('/api/offers', require('./routes/offers'));

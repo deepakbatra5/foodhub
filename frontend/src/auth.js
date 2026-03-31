@@ -41,3 +41,7 @@ export function currentUser() {
     return null;
   }
 }
+
+export function isAdminUser() {
+  return currentUser()?.role === 'admin';
+}

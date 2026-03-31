@@ -1,4 +1,5 @@
-const { sequelize, Restaurant, MenuItem } = require('./models');
+const bcrypt = require('bcrypt');
+const { sequelize, Restaurant, MenuItem, User } = require('./models');
 const restaurantData = require('./data/restaurants.json');
 
 let initializationPromise;
@@ -47,6 +48,53 @@ async function seedRestaurantsIfEmpty() {
   console.log(`Seeded ${restaurantData.restaurants.length} restaurants with menus.`);
 }
 
+function getAdminSeedConfig() {
+  if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+    return {
+      name: process.env.ADMIN_NAME || 'FoodHub Admin',
+      email: process.env.ADMIN_EMAIL,
+      password: process.env.ADMIN_PASSWORD
+    };
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    return {
+      name: 'FoodHub Admin',
+      email: 'admin@foodhub.local',
+      password: 'Admin@12345'
+    };
+  }
+
+  return null;
+}
+
+async function ensureAdminUser() {
+  const adminSeedConfig = getAdminSeedConfig();
+
+  if (!adminSeedConfig) {
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(adminSeedConfig.password, 10);
+  const existingUser = await User.findOne({ where: { email: adminSeedConfig.email } });
+
+  if (!existingUser) {
+    await User.create({
+      name: adminSeedConfig.name,
+      email: adminSeedConfig.email,
+      passwordHash,
+      role: 'admin'
+    });
+    console.log(`Created admin user: ${adminSeedConfig.email}`);
+    return;
+  }
+
+  if (existingUser.role !== 'admin') {
+    await existingUser.update({ role: 'admin', passwordHash, name: adminSeedConfig.name });
+    console.log(`Promoted existing user to admin: ${adminSeedConfig.email}`);
+  }
+}
+
 async function initializeDatabase() {
   const syncOptions = {
     alter: process.env.DB_SYNC_ALTER === 'true',
@@ -55,6 +103,7 @@ async function initializeDatabase() {
 
   await sequelize.authenticate();
   await sequelize.sync(syncOptions);
+  await ensureAdminUser();
   await seedRestaurantsIfEmpty();
 }
 
