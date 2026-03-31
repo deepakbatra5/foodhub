@@ -35,9 +35,9 @@ export default function Signup() {
     try {
       const response = await api.post('/api/auth/register', { name, email, password });
       saveAuth(response.data);
-      navigate('/');
+      window.location.assign('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed. Please try again.');
+      setError(err.response?.data?.error || err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }

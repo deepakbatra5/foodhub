@@ -23,9 +23,9 @@ export default function Login() {
     try {
       const response = await api.post('/api/auth/login', { email, password });
       saveAuth(response.data);
-      navigate('/');
+      window.location.assign('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+      setError(err.response?.data?.error || err.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
