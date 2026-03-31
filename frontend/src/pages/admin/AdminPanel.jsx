@@ -42,6 +42,28 @@ function formatCurrency(value) {
   return `Rs ${Number(value || 0).toLocaleString()}`;
 }
 
+async function adminRequest(method, path, data) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  try {
+    return await api.request({
+      method,
+      url: `/api/admin${normalizedPath}`,
+      data
+    });
+  } catch (error) {
+    if (error?.response?.status !== 404) {
+      throw error;
+    }
+
+    return api.request({
+      method,
+      url: `/admin${normalizedPath}`,
+      data
+    });
+  }
+}
+
 export default function AdminPanel() {
   const navigate = useNavigate();
   const user = currentUser();
@@ -85,10 +107,10 @@ export default function AdminPanel() {
 
     try {
       const [summaryResponse, usersResponse, ordersResponse, restaurantsResponse] = await Promise.all([
-        api.get('/api/admin/summary'),
-        api.get('/api/admin/users'),
-        api.get('/api/admin/orders'),
-        api.get('/api/admin/restaurants')
+        adminRequest('get', '/summary'),
+        adminRequest('get', '/users'),
+        adminRequest('get', '/orders'),
+        adminRequest('get', '/restaurants')
       ]);
 
       setSummary(summaryResponse.data);
@@ -125,8 +147,8 @@ export default function AdminPanel() {
 
   async function refreshRestaurantsAndSummary(nextRestaurantId = selectedRestaurantId) {
     const [summaryResponse, restaurantsResponse] = await Promise.all([
-      api.get('/api/admin/summary'),
-      api.get('/api/admin/restaurants')
+      adminRequest('get', '/summary'),
+      adminRequest('get', '/restaurants')
     ]);
 
     setSummary(summaryResponse.data);
@@ -150,10 +172,10 @@ export default function AdminPanel() {
 
     try {
       if (editingRestaurantId) {
-        await api.put(`/api/admin/restaurants/${editingRestaurantId}`, restaurantForm);
+        await adminRequest('put', `/restaurants/${editingRestaurantId}`, restaurantForm);
         setSuccessMessage('Restaurant updated successfully');
       } else {
-        const response = await api.post('/api/admin/restaurants', restaurantForm);
+        const response = await adminRequest('post', '/restaurants', restaurantForm);
         setSuccessMessage('Restaurant added successfully');
         setSelectedRestaurantId(String(response.data.id));
       }
@@ -173,7 +195,7 @@ export default function AdminPanel() {
     }
 
     try {
-      await api.delete(`/api/admin/restaurants/${restaurantId}`);
+      await adminRequest('delete', `/restaurants/${restaurantId}`);
       setSuccessMessage('Restaurant deleted');
       await refreshRestaurantsAndSummary(selectedRestaurantId === String(restaurantId) ? '' : selectedRestaurantId);
     } catch (requestError) {
@@ -189,10 +211,10 @@ export default function AdminPanel() {
 
     try {
       if (editingMenuItemId) {
-        await api.put(`/api/admin/menu-items/${editingMenuItemId}`, menuForm);
+        await adminRequest('put', `/menu-items/${editingMenuItemId}`, menuForm);
         setSuccessMessage('Menu item updated successfully');
       } else {
-        await api.post(`/api/admin/restaurants/${menuForm.restaurantId}/menu-items`, menuForm);
+        await adminRequest('post', `/restaurants/${menuForm.restaurantId}/menu-items`, menuForm);
         setSuccessMessage('Menu item added successfully');
       }
 
@@ -211,7 +233,7 @@ export default function AdminPanel() {
     }
 
     try {
-      await api.delete(`/api/admin/menu-items/${menuItemId}`);
+      await adminRequest('delete', `/menu-items/${menuItemId}`);
       setSuccessMessage('Menu item deleted');
       await refreshRestaurantsAndSummary(selectedRestaurantId);
     } catch (requestError) {
@@ -221,8 +243,8 @@ export default function AdminPanel() {
 
   async function handleOrderStatusChange(orderId, status) {
     try {
-      await api.patch(`/api/admin/orders/${orderId}`, { status });
-      const ordersResponse = await api.get('/api/admin/orders');
+      await adminRequest('patch', `/orders/${orderId}`, { status });
+      const ordersResponse = await adminRequest('get', '/orders');
       setOrders(ordersResponse.data);
       setSuccessMessage('Order status updated');
     } catch (requestError) {
